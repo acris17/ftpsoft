@@ -1,0 +1,56 @@
+- class server
+  - properties
+    - socket
+      • server_name     :: string
+      • server_port     :: string
+      • server_socket   :: socket
+      • max_connections :: string
+      * is_enabled      :: bool
+      * recv_size       :: int
+      * mode            :: active|passive|both
+    - threads
+      • thread_list :: [tid]
+    - filesystem
+      • ftp_root   :: path
+      • log_dir    :: path
+      • users_cfg  :: path
+      • server_cfg :: path
+    * dataport
+      * dataport_min :: string
+      * dataport_max :: string
+  - methods
+    • init         :: (self) -> ()
+    • start        :: (self) -> ()
+    • configure    :: (self) -> ()
+    • arguments    :: (self) -> ()
+    • eventloop    :: (self) -> ()
+    • setup        :: (self) -> ()
+    • join_threads :: (self) -> ()
+- class user
+  - properties
+    - socket
+      • user_socket :: socket
+      • recv_size   :: int
+    - login
+      • username :: string
+      • password :: string
+      • type     :: admin|user|not_allowed|locked
+      * welcome  :: string
+    - filesystem
+      • user_dir  :: path
+      • users_cfg :: path
+    - messages
+      • user_message :: string
+      • tokens       :: [string]
+  - methods
+    • init         :: (self, socket, users_cfg) -> ()
+    • start        :: (self)
+    • authenticate :: (self) -> bool
+    • eventloop    :: (self) -> ()
+    • dispatch     :: (self) -> ()
+
+- support functions
+  • parser :: (string) -> [string]
+- controller functions
+  • user_manager :: (socket, users_cfg) -> ()
+  • main :: () -> int

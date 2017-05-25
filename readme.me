@@ -1,0 +1,11 @@
+- usage
+  • client -> python3 ftp_client.py <option> <commands>
+  • server -> python3 ftp_server.py <option> <commands>
+  • test   -> python3 ftp_client.py -T
+- tests
+  • The test file is very similar except for the first line, where I just called the open command instead of the command line usage.
+  • Every call to open prompts the user to enter his/her username and password. This is because I couldn't find a simpler way to implement authentication
+  • The only way to test is to use the option flag as shown above.
+- connecting
+  • I assumed the host = cnt4713.cs.fiu.edu and port = 2108 for submission
+  • If that doesn't work, changing the configs will automatically update the values

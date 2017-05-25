@@ -1,0 +1,8 @@
+#open is the only way to start a connection with the server
+open 127.0.0.1 12001
+ls
+#put file.txt
+#get file.txt file2.txt
+#ls
+#del file.txt
+#quit

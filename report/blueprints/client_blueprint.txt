@@ -1,0 +1,53 @@
+- abstract
+  • python3 ftp_client.py $option $username $password
+- question
+  • debug mode
+  • logging/log file
+  • encode/decode functions and newlines
+- ftp_client.py 
+  - class client
+    - properties
+      - constants
+        • recv_size        = 1024
+        • ftp_port         = 21
+        • dataport_min     = 60020
+        • dataport_max     = 61000
+        • dataport_backlog = 1
+      - variables
+        • userinput :: string
+        • tokens    :: [string]
+      - connection
+        • username  :: string
+        • password  :: string
+        • hostname  :: string
+        • logged_on :: bool
+      - sockets
+        • ftp_socket  :: socket
+        • data_socket :: socket
+        • next_dataport = 1
+    - methods
+      • init      :: (self, user, pass) -> ()
+      • start     :: (self) -> ()
+      • configure :: (self) -> ()
+      • dispatch  :: (self) -> ()
+      • connect   :: (self) -> ()
+      • login     :: (self) -> ()
+      • relogin   :: (self) -> ()
+      • dataport  :: (self) -> ()
+  - utility functions
+    • decode_message :: (message, bool) -> string
+    • encode_message :: (string) -> message
+  - command functions
+    • ftp_quit    :: (socket, bool) -> ()
+    • ftp_logout  :: (socket, bool) -> (socket, bool)
+    • ftp_help    :: () -> ()
+    • ftp_pwd     :: (socket) -> ()
+    • ftp_ls      :: (socket, socket, tokens) -> ()
+    • ftp_delete  :: (socket, tokens) -> ()
+    • ftp_put     :: (socket, socket, tokens) -> ()
+    • ftp_get     :: (socket, socket, tokens) -> ()
+  - program functions
+    • main        :: () -> int
+    • arg_manager :: () -> ?
+    • menu        :: prompt -> userinput
+    • parser      :: userinput -> tokens
