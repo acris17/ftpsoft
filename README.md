@@ -1,4 +1,4 @@
-# Abstract
+# Ftpsoft
 An ftp server and client written for my net centrics class. 
 
 ## Usage
