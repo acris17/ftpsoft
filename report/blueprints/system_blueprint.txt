@@ -1,1 +1,0 @@
-[Client1, Client2, …] -> Server -> [User1, User2, …]
