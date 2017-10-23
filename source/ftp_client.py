@@ -4,7 +4,8 @@ import os
 import sys
 from socket import *
 
-# class definitions
+
+# classes
 class Client:
     def __init__(self):
         """
@@ -62,12 +63,10 @@ class Client:
 
         try: 
             for line in open(self.client_cfg):
-                # parse line
                 tokens  = parser(line)
                 command = tokens[0]
                 arglist = tokens[1:]
 
-                # configuration tree
                 if command.startswith("# "):
                     pass
                 elif command == "host":
@@ -98,7 +97,6 @@ class Client:
         type: (self) -> ()
         """
 
-        # setup parser
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument("-H", "--hostname", help="enter hostname")
         arg_parser.add_argument("-u", "--username", help="enter username")
@@ -118,11 +116,8 @@ class Client:
         arg_parser.add_argument("--only",    help="only log all output", action="store_true")
         arg_parser.add_argument("--version", help="display version",     action="store_true")
         arg_parser.add_argument("--info",    help="display client info", action="store_true")
-
-        # parse arguments
         args = arg_parser.parse_args()
 
-        # argument tree
         if args.hostname:
             self.host = args.hostname
         if args.username:
@@ -170,11 +165,9 @@ class Client:
         """
 
         try:
-            # parse tokens
             command = self.tokens[0].lower()
             arglist = self.tokens[1:]
 
-            # ftp commands
             if   command in ("exit", "bye", "quit"):
                 if self.ftp_socket:
                     ftp_logout(self.ftp_socket)
@@ -278,7 +271,7 @@ class Client:
                         else:
                             print("User logged in, proceed")
             
-            # temporary
+            # debugging
             elif command == "try":
                 # fast way to try (host, address) from config, for debugging
                 if len(arglist) == 0:
@@ -292,9 +285,7 @@ class Client:
                         self.login()
                     else:
                         print("already logged in")
-            # temporary
 
-            # invalid command
             else:
                 print("Invalid command")
         except Exception as e:
@@ -306,19 +297,15 @@ class Client:
         help: Client.login <-> User.authenticate 
         """
 
-        # prompt for username, password
         self.username = menu("username:")
         self.password = menu("password:")
 
-        # send credentials
         send_message(self.ftp_socket, self.username)
         send_message(self.ftp_socket, self.password)
 
-        # wait for login status
         reply = get_message(self.ftp_socket)
         code, message = parse_reply(reply)
 
-        # check if login successful
         if code == "230":
             print("Logged into {}".format(self.host))
         else:
@@ -341,7 +328,6 @@ class Client:
         """
 
         try:
-            # define variables
             self.data_address = gethostbyname("")
             self.next_dataport += 1
             self.data_port = (self.dataport_min + self.next_dataport) % self.dataport_max
@@ -363,11 +349,9 @@ class Client:
 
         if os.path.exists(self.test_file) and os.path.isfile(self.test_file):
             for line in open(self.test_file):
-                # parse line
                 tokens  = parser(line)
                 command = tokens[0]
 
-                # command tree
                 if command.startswith("# ") or not command:
                     pass
                 else:
@@ -375,7 +359,8 @@ class Client:
                     self.dispatch()
                     pause = input("(press enter to continue): ")
 
-# support functions
+
+# interface functions
 def menu(prompt):
     """
     goal: get and return userinput
@@ -391,6 +376,7 @@ def parser(userinput):
     """
 
     return userinput.strip().split()
+
 
 # message functions
 def send_message(ftp_socket, message):
@@ -421,6 +407,7 @@ def parse_reply(reply):
     message = " ".join(tokens[1:])
     return code, message
 
+
 # ftp commands
 def ftp_pwd(ftp_socket):
     """
@@ -429,12 +416,10 @@ def ftp_pwd(ftp_socket):
     """
     
     if ftp_socket:
-        # send command
         send_message(ftp_socket, "pwd")
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
             message = get_message(ftp_socket)
             print(message)
@@ -445,12 +430,10 @@ def ftp_noop(ftp_socket):
     """
 
     if ftp_socket:
-        # send command
         send_message(ftp_socket, "noop")
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
             reply = get_message(ftp_socket)
             code, message = parse_reply(reply)
@@ -462,7 +445,6 @@ def ftp_logout(ftp_socket):
     """
 
     if ftp_socket:
-        # send command
         send_message(ftp_socket, "logout")
         reply = get_message(ftp_socket)
 def ftp_type(ftp_socket):
@@ -472,12 +454,10 @@ def ftp_type(ftp_socket):
     """
 
     if ftp_socket:
-        # send command
         send_message(ftp_socket, "type")
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
             rep_type = get_message(ftp_socket)
             print("type =", rep_type)
@@ -488,7 +468,6 @@ def ftp_port(ftp_socket, address, port):
     """
 
     if ftp_socket:
-        # send command
         port_command = "port {} {}".format(address, port)
         send_message(ftp_socket, port_command)
         reply = get_message(ftp_socket)
@@ -499,18 +478,14 @@ def ftp_list(ftp_socket, data_socket):
     """
 
     if ftp_socket and data_socket:
-        # send command
         send_message(ftp_socket, "list")
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
-            # wait for data
             data_connection, data_host = data_socket.accept()
             contents = get_message(data_connection)
 
-            # display contents then close
             print(contents)
             data_connection.close()
 def ftp_open(host, port=21):
@@ -534,7 +509,6 @@ def ftp_cwd(ftp_socket, path):
     """
 
     if ftp_socket:
-        # send command
         cwd_command = "{} {}".format("cwd", path)
         send_message(ftp_socket, cwd_command)
         reply = get_message(ftp_socket)
@@ -545,7 +519,6 @@ def ftp_cdup(ftp_socket):
     """
 
     if ftp_socket:
-        # send command
         send_message(ftp_socket, "cdup")
         reply = get_message(ftp_socket)
 def ftp_mkd(ftp_socket, path):
@@ -555,7 +528,6 @@ def ftp_mkd(ftp_socket, path):
     """
 
     if ftp_socket:
-        # send command
         mkd_command = "{} {}".format("mkd", path)
         send_message(ftp_socket, mkd_command)
         reply = get_message(ftp_socket)
@@ -566,7 +538,6 @@ def ftp_dele(ftp_socket, path):
     """
 
     if ftp_socket:
-        # send command
         dele_command = "{} {}".format("dele", path)
         send_message(ftp_socket, dele_command)
         reply = get_message(ftp_socket)
@@ -577,7 +548,6 @@ def ftp_rmd(ftp_socket, path):
     """
 
     if ftp_socket:
-        # send command
         rmd_command = "{} {}".format("rmd", path)
         send_message(ftp_socket, rmd_command)
         reply = get_message(ftp_socket)
@@ -588,7 +558,6 @@ def ftp_rn(ftp_socket, path, new_path):
     """
 
     if ftp_socket:
-        # send command
         rn_command = "{} {} {}".format("rn", path, new_path)
         send_message(ftp_socket, rn_command)
         reply = get_message(ftp_socket)
@@ -598,26 +567,21 @@ def ftp_retr(ftp_socket, data_socket, path):
     type: (socket, socket, path) -> ()
     """
 
-    if ftp_socket and data_socket:
-        # send command 
+    if ftp_socket and data_socket: 
         retr_command = "{} {}".format("retr", path)
         send_message(ftp_socket, retr_command)
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
-            # wait for data connection
             data_connection, data_host = data_socket.accept()
             packet = get_message(data_connection)
             contents = packet
             
-            # recieve file contents
             while packet:
                 packet = get_message(data_connection)
                 contents += packet
 
-            # create and write file
             filename = os.path.basename(path)
             with open(filename, "w") as file:
                 file.write(contents)
@@ -628,18 +592,14 @@ def ftp_stor(ftp_socket, data_socket, path):
     """
 
     if ftp_socket and data_socket and os.path.exists(path) and os.path.isfile(path):
-        # send command
         stor_command = "{} {}".format("appe", os.path.basename(path))
         send_message(ftp_socket, stor_command)
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
-            # wait for data connection
             data_connection, data_host = data_socket.accept()
 
-            # send contents of file
             with open(path, "r") as file:
                 packet = file.read(1024)
                 while packet:
@@ -652,23 +612,20 @@ def ftp_appe(ftp_socket, data_socket, path):
     """
 
     if ftp_socket and data_socket and os.path.exists(path) and os.path.isfile(path):
-        # send command
         appe_command = "{} {}".format("appe", os.path.basename(path))
         send_message(ftp_socket, appe_command)
         reply = get_message(ftp_socket)
         code, message = parse_reply(reply)
 
-        # if command valid
         if code == "200":
-            # wait for data connection
             data_connection, data_host = data_socket.accept()
 
-            # send contents of file
             with open(path, "r") as file:
                 packet = file.read(1024)
                 while packet:
                     send_message(data_connection, packet)
                     packet = file.read(1024)
+
 
 # controller functions
 def main():
@@ -677,17 +634,14 @@ def main():
     type: () -> int
     """
 
-    # define variables
     argc = len(sys.argv)
     exit_success = 0
 
-    # configure client
     client = Client()
     client.configure()
     if argc > 1:
         client.arguments()
 
-    # start client
     client.start()
     sys.exit(exit_success)
 main()

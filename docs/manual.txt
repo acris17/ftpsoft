@@ -1,0 +1,18 @@
+The following are commands supported by my program. To do a quick login, I've implemented the debug command "try". Just enter username:andrew and password:0117 or see the screenshot included to see an example run.
+
+• exit, bye, quit
+• pwd
+• noop
+• logout, close
+• type
+• list, dir, ls
+• cwd, cd
+• cdup
+• mkd, mkdir
+• dele, delete
+• rmd, rmdir
+• rn, rename
+• retr, get
+• stor, put, send
+• appe, append
+• open, ftp

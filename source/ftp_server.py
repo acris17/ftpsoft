@@ -5,7 +5,8 @@ import sys
 import threading
 from socket import *
 
-# class definitions
+
+# classes
 class Server:
     def __init__(self):
         """
@@ -86,12 +87,10 @@ class Server:
 
         try:
             for line in open(self.server_cfg):
-                # parse line
                 tokens  = parser(line)
                 command = tokens[0]
                 arglist = tokens[1:]
 
-                # configuration tree
                 if command.startswith("# "):
                     pass
                 elif command == "host":
@@ -118,18 +117,14 @@ class Server:
         type: (self) -> ()
         """
 
-        # setup parser
         parser = argparse.ArgumentParser()
         parser.add_argument("-p", "--port",   help="enter port")
         parser.add_argument("-c", "--config", help="enter path of config file")
         parser.add_argument("-m", "--max",    help="enter max num of connections")
         parser.add_argument("-d", "--dpr",    help="enter dataport range, i.e 5000-5100")
         parser.add_argument("-u", "--userdb", help="enter path of user file")
-
-        # parse arguments
         args = parser.parse_args()
 
-        # argument tree
         if args.port:
             self.server_port = args.port
         if args.config:
@@ -204,14 +199,12 @@ class User:
         type: (self) -> ()
         """
 
-        # type: user
         if self.type == "user":
             self.user_home = self.ftp_root + "/{}".format(self.username)
             self.work_dir  = self.user_home
             if not os.path.exists(self.user_home):
                 os.mkdir(self.user_home)
 
-        # type: admin
         if self.type == "admin":
             self.user_home = self.ftp_root
             self.work_dir  = self.user_home
@@ -222,11 +215,9 @@ class User:
         """
 
         try:
-            # parse tokens
             command = self.tokens[0].lower()
             arglist = self.tokens[1:]
 
-            # ftp commands
             if   command == "pwd":
                 if not arglist:
                     send_message(self.user_socket, "200 Command okay.")
@@ -370,7 +361,6 @@ class User:
                 else:
                     send_message(self.user_socket, "501 Syntax error in parameters or arguments.")
 
-            # invalid command
             else:
                 send_message(self.user_socket, "500 Syntax error, command unrecognized.")
         except Exception as e:
@@ -386,17 +376,12 @@ class User:
         """
 
         try: 
-            # initiate login
             send_message(self.user_socket, "530 not logged in")
 
-            # get credentials
             self.username = get_message(self.user_socket)
             self.password = get_message(self.user_socket)
-            
-            # validate credientials
-            is_valid = self.validate()
 
-            # reply to client
+            is_valid = self.validate()
             if is_valid:
                 send_message(self.user_socket, "230 user logged in, proceed")
                 return True
@@ -417,20 +402,17 @@ class User:
         # validate credentials
         try:
             for line in open(self.users_cfg):
-                # check if proper parse
                 tokens = parser(line)
+
                 if len(tokens) == 3:
-                    # parse tokens
                     valid_user = tokens[0]
                     valid_pass = tokens[1]
                     valid_type = tokens[2]
 
-                    # make sure type is valid
                     if valid_type == "notallowed" or valid_type == "locked":
                         self.type = valid_type
                         return False
 
-                    # validate variables
                     elif self.username == valid_user and self.password == valid_pass:
                         self.type = valid_type
                         return True
@@ -443,13 +425,12 @@ class User:
         type: (self, string) -> ()
         """
 
-        # type: user
         if self.type == "user" and self.user_home in new_path:
             self.work_dir = new_path
 
-        # type: admin
         elif self.type == "admin" and self.ftp_root in new_path:
             self.work_dir = new_path
+
 
 # support functions
 def parser(userinput):
@@ -465,10 +446,8 @@ def file_exists(work_dir, path):
     type: (string, string) -> bool
     """
 
-    # save previosu directory
     prev_dir = os.getcwd()
 
-    # check if file exists
     try:
         os.chdir(work_dir)
         if os.path.exists(path) and os.path.isfile(path):
@@ -479,6 +458,7 @@ def file_exists(work_dir, path):
     except Exception as e:
         os.chdir(prev_dir)
         return False    
+
 
 # message functions
 def send_message(ftp_socket, message):
@@ -498,6 +478,7 @@ def get_message(ftp_socket):
 
     if ftp_socket:
         return ftp_socket.recv(1024).decode()
+
 
 # ftp commands
 def ftp_pwd(ftp_socket, work_dir):
@@ -553,17 +534,14 @@ def ftp_cwd(work_dir, new_path):
     type: (string, string) -> string | none
     """
 
-    # change to work directory
     prev_dir = os.getcwd()
     os.chdir(work_dir)
 
-    # check if new path exists
     if os.path.exists(new_path) and os.path.isdir(new_path):
         new_path = os.path.abspath(new_path)
     else:
         new_path = None
     
-    # go back to previous directory
     os.chdir(prev_dir)
     return new_path
 def ftp_open(address, port):
@@ -586,10 +564,8 @@ def ftp_mkd(work_dir, path):
     type: (path, path) -> ()
     """
 
-    # save previous directory
     prev_dir = os.getcwd()
 
-    # create directory
     try:
         os.chdir(work_dir)
         os.mkdir(path)
@@ -602,10 +578,8 @@ def ftp_dele(work_dir, path):
     type: (string, string) -> ()
     """
 
-    # save previous directory
     prev_dir = os.getcwd()
 
-    # remove file
     try:
         os.chdir(work_dir)
         if os.path.exists(path) and os.path.isfile(path):
@@ -619,10 +593,8 @@ def ftp_rmd(work_dir, path, user_home):
     type: (string, string, string) -> ()
     """
 
-    # save previous directory
     prev_dir = os.getcwd()
 
-    # remove directory
     try:
         os.chdir(work_dir)
         if os.path.exists(path) and os.path.isdir(path):
@@ -638,10 +610,8 @@ def ftp_rn(work_dir, path, new_path):
     type: (string, string, string) -> ()
     """
 
-    # save previous directory
     prev_dir = os.getcwd()
 
-    # rename file
     try:
         os.chdir(work_dir)
         if os.path.exists(path):
@@ -656,18 +626,15 @@ def ftp_retr(data_socket, work_dir, path):
     """
 
     if data_socket:
-        # save previous directory
         prev_dir = os.getcwd()
         os.chdir(work_dir)
 
-        # send contents of file
         with open(path, "r") as file:
             packet = file.read(1024)
             while packet:
                 send_message(data_socket, packet)
                 packet = file.read(1024)
 
-        # go back to previous directory
         os.chdir(prev_dir)
 def ftp_stor(data_socket, work_dir, file_name):
     """
@@ -676,24 +643,19 @@ def ftp_stor(data_socket, work_dir, file_name):
     """
 
     if data_socket:
-        # save previous directory
         prev_dir = os.getcwd()
         os.chdir(work_dir)
 
-        # get first packet
         packet = get_message(data_socket)
         contents = packet
 
-        # get rest of packets
         while packet:
             packet = get_message(data_socket)
             contents += packet
 
-        # create and write file
         with open(file_name, "w") as file:
             file.write(contents)
 
-        # goto previous directory
         os.chdir(prev_dir)
 def ftp_appe(data_socket, work_dir, file_name):
     """
@@ -702,25 +664,21 @@ def ftp_appe(data_socket, work_dir, file_name):
     """
 
     if data_socket:
-        # save previous directory
         prev_dir = os.getcwd()
         os.chdir(work_dir)
 
-        # get first packet
         packet = get_message(data_socket)
         contents = packet
 
-        # get rest of packets
         while packet:
             packet = get_message(data_socket)
             contents += packet
 
-        # create and write file
         with open(file_name, "a") as file:
             file.write(contents)
 
-        # goto previous directory
         os.chdir(prev_dir)
+
 
 # controller functions
 def user_manager(user_socket, users_cfg, ftp_root):
@@ -738,17 +696,14 @@ def main():
     type: () -> int
     """
 
-    # define variables
     argc = len(sys.argv)
     exit_success = 0
 
-    # configure server
     server = Server()
     server.configure()
     if argc > 1:
         client.arguments()
 
-    # start server
     server.start()
     sys.exit(exit_success)
 main()
